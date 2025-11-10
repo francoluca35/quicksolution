@@ -5,6 +5,10 @@ export const metadata: Metadata = {
   title: 'QuickSolution - Sistema de Comandas para Restaurantes',
   description: 'Sistema integral de comandas múltiples que revoluciona la gestión de tu restaurante. Controla mesas, delivery, takeaway y mucho más desde una sola plataforma.',
   keywords: ['restaurante', 'comandas', 'delivery', 'takeaway', 'gestión restaurante', 'POS'],
+  icons: {
+    icon: '/assets/logo.png',
+    apple: '/assets/logo.png',
+  },
 }
 
 export default function RootLayout({
