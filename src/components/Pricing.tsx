@@ -4,13 +4,28 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Sparkles } from 'lucide-react';
 
+// Número de WhatsApp para contacto (formato: código de país + número, sin + ni espacios)
+const WHATSAPP_NUMBER = '5491131199882';
+
+// Función para generar el enlace de WhatsApp
+function getWhatsAppLink(number: string, message: string): string {
+  const encodedMessage = encodeURIComponent(message);
+  return `https://wa.me/${number}?text=${encodedMessage}`;
+}
+
+// Función para generar el mensaje según el plan y período
+function getWhatsAppMessage(planName: string, isAnnual: boolean): string {
+  const periodo = isAnnual ? 'anual' : 'mensual';
+  return `Hola, me gustaría adquirir el servicio de ${planName} ${periodo}.`;
+}
+
 const plans = [
  
   {
-    name: 'Professional',
+    name: 'Profesional',
     description: 'Para restaurantes en crecimiento',
-    monthlyPrice: 79,
-    annualPrice: 790,
+    monthlyPrice: 60,
+    annualPrice: 612,
     features: [
       'Mesas ilimitadas',
       'Delivery integrado',
@@ -26,17 +41,13 @@ const plans = [
     popular: true
   },
   {
-    name: 'Enterprise',
-    description: 'Solución completa para cadenas',
-    monthlyPrice: 199,
-    annualPrice: 1990,
+    name: 'Restaurante Grande',
+    description: 'Solución completa para restaurantes grandes',
+    monthlyPrice: 100,
+    annualPrice: 1020,
     features: [
-      'Todo en Professional',
-      'Multi-sucursal',
+      'Todo en Profesional',
       'API personalizada',
-      'Integraciones custom',
-      'Gerente de cuenta dedicado',
-      'Capacitación on-site',
       'SLA garantizado',
       'Reportes personalizados'
     ],
@@ -88,7 +99,7 @@ export function Pricing() {
             >
               Anual
               <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded-full">
-                Ahorra 17%
+                Ahorra 15%
               </span>
             </button>
           </div>
@@ -152,17 +163,20 @@ export function Pricing() {
                   ))}
                 </ul>
                 
-                <motion.button
+                <motion.a
+                  href={getWhatsAppLink(WHATSAPP_NUMBER, getWhatsAppMessage(plan.name, isAnnual))}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className={`w-full py-4 rounded-xl transition-all ${
+                  className={`w-full py-4 rounded-xl transition-all inline-block text-center ${
                     plan.popular
                       ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-500/30'
                       : 'bg-slate-800 text-white hover:bg-slate-700 border border-slate-700'
                   }`}
                 >
                   Comenzar Ahora
-                </motion.button>
+                </motion.a>
               </div>
             </motion.div>
           ))}

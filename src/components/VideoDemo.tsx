@@ -1,33 +1,131 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { Play, Monitor, Smartphone, Tablet } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Play, Monitor, Smartphone, Tablet, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
-const videos = [
+// Función para extraer el ID del video de YouTube desde diferentes formatos de URL
+function getYouTubeVideoId(url: string): string | null {
+  if (!url) return null;
+  
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+    /youtube\.com\/watch\?.*v=([^&\n?#]+)/
+  ];
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  
+  return null;
+}
+
+// Función para obtener la thumbnail de YouTube con múltiples opciones
+function getYouTubeThumbnail(videoId: string | null): string {
+  if (!videoId) return '';
+  // Intentamos con maxresdefault primero, luego hqdefault como fallback
+  return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+}
+
+// Función para obtener thumbnail de fallback
+function getYouTubeThumbnailFallback(videoId: string | null): string {
+  if (!videoId) return '';
+  return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+}
+
+interface Video {
+  title: string;
+  description: string;
+  icon: React.ComponentType<{ className?: string }>;
+  youtubeUrl?: string; // URL de YouTube (opcional)
+  thumbnail?: string; // Thumbnail personalizado (opcional, si no hay youtubeUrl)
+  duration?: string;
+}
+
+// Número de WhatsApp para contacto (formato: código de país + número, sin + ni espacios)
+// Ejemplo: 5491123456789 para Argentina
+const WHATSAPP_NUMBER = '5491131199882'; // Reemplaza con tu número de WhatsApp
+
+// Mensaje predefinido para WhatsApp
+const WHATSAPP_MESSAGE = 'Hola, quería solicitar la prueba de comandas QuickSolution.';
+
+// Función para generar el enlace de WhatsApp
+function getWhatsAppLink(number: string, message: string): string {
+  const encodedMessage = encodeURIComponent(message);
+  return `https://wa.me/${number}?text=${encodedMessage}`;
+}
+
+const videos: Video[] = [
   {
     title: 'Gestión de Mesas en Salón',
     description: 'Administra todas tus mesas en tiempo real con un sistema intuitivo',
     icon: Monitor,
+    // Reemplaza con tu propio enlace de YouTube:
+    youtubeUrl: 'https://youtu.be/krv1T58rccI', 
     thumbnail: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=500&fit=crop',
-    duration: '2:30'
+    duration: '0:56'
   },
   {
-    title: 'Sistema de Delivery con Mapa',
+    title: 'Sistema de gestión de mesas y productos',
     description: 'Rastrea a tus repartidores en tiempo real y optimiza las entregas',
     icon: Smartphone,
+    // Reemplaza con tu propio enlace de YouTube:
+    youtubeUrl: 'https://youtu.be/Cp_xHV8g7jk', 
     thumbnail: 'https://images.unsplash.com/photo-1526367790999-0150786686a2?w=800&h=500&fit=crop',
-    duration: '3:15'
+    duration: '1:01'
   },
   {
-    title: 'Pantalla de Cocina Digital',
+    title: 'Analisis de ventas y rendimientos',
     description: 'Comandas digitales que eliminan errores y mejoran la eficiencia',
     icon: Tablet,
+    // Reemplaza con tu propio enlace de YouTube:
+    youtubeUrl: 'https://youtu.be/3i8mJxuPPgk', 
     thumbnail: 'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=800&h=500&fit=crop',
-    duration: '2:45'
+    duration: '0:22'
   }
 ];
 
 export function VideoDemo() {
+  const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+
+  const handleVideoClick = (video: Video) => {
+    if (video.youtubeUrl) {
+      setSelectedVideo(video);
+    } else {
+      // Si no hay URL de YouTube, puedes mostrar un mensaje o hacer otra acción
+      console.log('Este video no tiene URL de YouTube configurada');
+      // Opcional: mostrar un alert o toast
+      alert('Este video aún no tiene una URL de YouTube configurada. Por favor, agrega una URL de YouTube en el código.');
+    }
+  };
+
+  const closeModal = () => {
+    setSelectedVideo(null);
+  };
+
+  // Cerrar modal con la tecla Escape y prevenir scroll
+  useEffect(() => {
+    if (!selectedVideo) return;
+
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelectedVideo(null);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    // Prevenir scroll del body cuando el modal está abierto
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [selectedVideo]);
+
   return (
     <section id="demo" className="py-24 relative overflow-hidden bg-slate-900/30">
       <div className="container mx-auto px-4">
@@ -46,52 +144,76 @@ export function VideoDemo() {
         </motion.div>
         
         <div className="grid md:grid-cols-3 gap-8">
-          {videos.map((video, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ y: -8 }}
-              className="group cursor-pointer"
-            >
-              <div className="relative overflow-hidden rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-green-500/50 transition-all">
-                {/* Video Thumbnail */}
-                <div className="relative aspect-video overflow-hidden">
-                  <img 
-                    src={video.thumbnail} 
-                    alt={video.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                  
-                  {/* Play Button Overlay */}
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/30 transition-colors">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                      <Play className="w-8 h-8 text-white ml-1" fill="white" />
+          {videos.map((video, index) => {
+            const videoId = video.youtubeUrl ? getYouTubeVideoId(video.youtubeUrl) : null;
+            // Si hay videoId, usar thumbnail de YouTube, sino usar la personalizada
+            const thumbnail = videoId 
+              ? getYouTubeThumbnail(videoId) 
+              : (video.thumbnail || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=500&fit=crop');
+            const fallbackThumbnail = videoId 
+              ? getYouTubeThumbnailFallback(videoId) 
+              : (video.thumbnail || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=500&fit=crop');
+            const customThumbnail = video.thumbnail || 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&h=500&fit=crop';
+
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+                whileHover={{ y: -8 }}
+                className="group cursor-pointer"
+                onClick={() => handleVideoClick(video)}
+              >
+                <div className="relative overflow-hidden rounded-2xl bg-slate-800/50 border border-slate-700/50 hover:border-green-500/50 transition-all">
+                  {/* Video Thumbnail */}
+                  <div className="relative aspect-video overflow-hidden bg-slate-700">
+                    <img 
+                      src={thumbnail} 
+                      alt={video.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        // Primero intenta con hqdefault, luego con thumbnail personalizada
+                        if (videoId && target.src.includes('maxresdefault')) {
+                          target.src = fallbackThumbnail;
+                        } else if (customThumbnail) {
+                          target.src = customThumbnail;
+                        }
+                      }}
+                    />
+                    
+                    {/* Play Button Overlay - siempre visible para mejor UX */}
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/30 transition-colors">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
+                        <Play className="w-8 h-8 text-white ml-1" fill="white" />
+                      </div>
                     </div>
+                    
+                    {/* Duration Badge */}
+                    {video.duration && (
+                      <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-sm px-2 py-1 rounded text-sm text-white">
+                        {video.duration}
+                      </div>
+                    )}
                   </div>
                   
-                  {/* Duration Badge */}
-                  <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-sm px-2 py-1 rounded text-sm text-white">
-                    {video.duration}
+                  {/* Content */}
+                  <div className="p-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center">
+                        <video.icon className="w-5 h-5 text-green-400" />
+                      </div>
+                      <h3 className="text-xl text-white">{video.title}</h3>
+                    </div>
+                    <p className="text-slate-400">{video.description}</p>
                   </div>
                 </div>
-                
-                {/* Content */}
-                <div className="p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center">
-                      <video.icon className="w-5 h-5 text-green-400" />
-                    </div>
-                    <h3 className="text-xl text-white">{video.title}</h3>
-                  </div>
-                  <p className="text-slate-400">{video.description}</p>
-                </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
         
         {/* Full Demo CTA */}
@@ -101,15 +223,71 @@ export function VideoDemo() {
           viewport={{ once: true }}
           className="text-center mt-12"
         >
-          <motion.button
+          <motion.a
+            href={getWhatsAppLink(WHATSAPP_NUMBER, WHATSAPP_MESSAGE)}
+            target="_blank"
+            rel="noopener noreferrer"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="px-8 py-4 bg-gradient-to-r from-green-800 to-green-900 text-white rounded-lg hover:shadow-lg  transition-shadow"
+            className="inline-block px-8 py-4 bg-gradient-to-r from-green-800 to-green-900 text-white rounded-lg hover:shadow-lg transition-shadow cursor-pointer"
           >
             Solicitar Demo Completa
-          </motion.button>
+          </motion.a>
         </motion.div>
       </div>
+
+      {/* Modal de Video */}
+      <AnimatePresence>
+        {selectedVideo && selectedVideo.youtubeUrl && (() => {
+          const videoId = getYouTubeVideoId(selectedVideo.youtubeUrl);
+          if (!videoId) return null;
+
+          return (
+            <motion.div
+              key="video-modal"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+              onClick={closeModal}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="relative w-full max-w-4xl bg-slate-900 rounded-2xl overflow-hidden shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Botón de cerrar */}
+                <button
+                  onClick={closeModal}
+                  className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-black/70 hover:bg-black/90 flex items-center justify-center text-white transition-colors"
+                  aria-label="Cerrar video"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+
+                {/* Video Embed */}
+                <div className="relative w-full aspect-video bg-black">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
+                    title={selectedVideo.title}
+                    className="absolute inset-0 w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                </div>
+
+                {/* Información del video */}
+                <div className="p-6">
+                  <h3 className="text-2xl text-white mb-2">{selectedVideo.title}</h3>
+                  <p className="text-slate-400">{selectedVideo.description}</p>
+                </div>
+              </motion.div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
     </section>
   );
 }
