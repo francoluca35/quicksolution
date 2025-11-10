@@ -6,6 +6,18 @@ import Image from 'next/image';
 
 
 export function CTA() {
+
+  const WHATSAPP_NUMBER = '5491131199882'; // Reemplaza con tu número de WhatsApp
+
+// Mensaje predefinido para WhatsApp
+const WHATSAPP_MESSAGE = 'Hola, quería solicitar la prueba de comandas QuickSolution.';
+
+// Función para generar el enlace de WhatsApp
+function getWhatsAppLink(number: string, message: string): string {
+  const encodedMessage = encodeURIComponent(message);
+  return `https://wa.me/${number}?text=${encodedMessage}`;
+}
+
   return (
     <section id='contacto' className="py-24 relative overflow-hidden bg-slate-900">
       {/* Animated background */}
@@ -57,15 +69,18 @@ export function CTA() {
               </p>
               
               <div className="flex flex-wrap gap-4 justify-center">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 bg-gradient-to-r from-green-700 to-green-800 text-white rounded-lg flex items-center gap-2  transition-shadow"
-                >
-                  Contactate con nosotros
-                  <ArrowRight className="w-5 h-5" />
-                </motion.button>
-                
+              <motion.a
+  href={getWhatsAppLink(WHATSAPP_NUMBER, WHATSAPP_MESSAGE)}
+  target="_blank"
+  rel="noopener noreferrer"
+  whileHover={{ scale: 1.05 }}
+  whileTap={{ scale: 0.95 }}
+  className="px-8 py-4 bg-gradient-to-r from-green-700 to-green-800 text-white rounded-lg flex items-center gap-2 transition-shadow"
+>
+  Contactate con nosotros
+  <ArrowRight className="w-5 h-5" />
+</motion.a>
+
               
               </div>
               

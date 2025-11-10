@@ -5,6 +5,8 @@ import { ArrowRight, Play } from 'lucide-react';
 import Image from 'next/image';
 
 export function Hero() {
+
+
   return (
     <section id="hero" className="relative overflow-hidden pt-32 pb-24 bg-[url(/assets/fondo-hero.avif)] bg-cover bg-center bg-no-repeat">
   <div className="absolute inset-0 bg-black/60 z-0" />
